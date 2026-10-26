@@ -166,13 +166,13 @@ export function Status({ value = "" }: { value?: string }) {
   return (
     <Badge
       tone={
-        /ativo|confirmado|publicado|concluído|resolvido|ganho|pago|disponível|saudável/i.test(
+        /^\s*(ativo|confirmado|publicado|concluído|resolvido|ganho|pago|disponível|saudável)\s*$/i.test(
           value,
         )
           ? "success"
-          : /pendente|atenção|baixo|proposta|aguardando|andamento/i.test(value)
+          : /pendente|atenção|baixo|proposta|aguardando|andamento|convidado/i.test(value)
             ? "warning"
-            : /cancelado|inativo|crítico/i.test(value)
+            : /cancelado|inativo|crítico|suspenso/i.test(value)
               ? "danger"
               : "neutral"
       }
