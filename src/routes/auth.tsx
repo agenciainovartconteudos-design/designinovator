@@ -4,6 +4,7 @@ import Auth from "@/atlas/templates/auth";
 import rawConfig from "@/atlas/configs/auth.json";
 import { TemplateRoot } from "@/atlas/shared/ui";
 import type { TemplateConfig } from "@/atlas/types";
+import heroImage from "@/assets/agency-login-hero.webp";
 
 const config = rawConfig as unknown as TemplateConfig;
 
@@ -20,7 +21,7 @@ export const Route = createFileRoute("/auth")({
 function AuthPage() {
   return (
     <TemplateRoot config={config}>
-      <Auth config={config} />
+      <Auth config={config} imageSrc={heroImage} />
     </TemplateRoot>
   );
 }

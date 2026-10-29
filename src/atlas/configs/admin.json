@@ -3,9 +3,9 @@
   "templateId": "admin",
   "locale": "pt-BR",
   "branding": {
-    "name": "Nexo Admin",
-    "shortName": "NA",
-    "tagline": "CONTROLE, COM CLAREZA"
+    "name": "Nexo Conteúdo",
+    "shortName": "NC",
+    "tagline": "APROVAÇÃO SEM ATRITO PARA SUA AGÊNCIA"
   },
   "theme": {
     "mode": "light",
@@ -22,7 +22,7 @@
   "content": {
     "headline": "Visão geral",
     "description": "Tudo o que acontece na sua operação, em um só lugar.",
-    "eyebrow": "CONTROLE, COM CLAREZA",
+    "eyebrow": "APROVAÇÃO SEM ATRITO PARA SUA AGÊNCIA",
     "cta": "Começar agora",
     "heroImage": ""
   },
