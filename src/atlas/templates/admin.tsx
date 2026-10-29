@@ -10,6 +10,7 @@ import {
   UserCheck,
   UserPlus,
   Download,
+  Palette,
 } from "lucide-react";
 import type { TemplateProps, Entity } from "../types";
 import { list, makeId } from "../types";
@@ -38,11 +39,21 @@ export default function Admin({ config }: TemplateProps) {
     [filter, setFilter] = useState("Todos"),
     [edit, setEdit] = useState<Entity | null>(null),
     [create, setCreate] = useState(false);
+  const [arts, setArts] = useState(list(config, "artes")),
+    [artQuery, setArtQuery] = useState(""),
+    [artFilter, setArtFilter] = useState("Todos"),
+    [artEdit, setArtEdit] = useState<Entity | null>(null),
+    [artCreate, setArtCreate] = useState(false);
   const toast = useToast();
   const filtered = users.filter(
     (x) =>
       (filter === "Todos" || x.status === filter) &&
       `${x.title} ${x.email}`.toLowerCase().includes(query.toLowerCase()),
+  );
+  const filteredArts = arts.filter(
+    (x) =>
+      (artFilter === "Todos" || x.status === artFilter) &&
+      `${x.title} ${x.subtitle}`.toLowerCase().includes(artQuery.toLowerCase()),
   );
   const nav = [
     {
@@ -55,6 +66,12 @@ export default function Admin({ config }: TemplateProps) {
       label: "Usuários",
       icon: <Users size={18} />,
       count: users.length,
+    },
+    {
+      id: "artes",
+      label: "Criação de Artes",
+      icon: <Palette size={18} />,
+      count: arts.length,
     },
     { id: "roles", label: "Papéis & acesso", icon: <Shield size={18} /> },
     { id: "settings", label: "Configurações", icon: <Settings size={18} /> },
@@ -70,14 +87,26 @@ export default function Admin({ config }: TemplateProps) {
               ? "Pessoas que fazem acontecer"
               : view === "roles"
                 ? "Cada pessoa, o acesso certo"
-                : "Do seu jeito"
+                : view === "artes"
+                  ? "Criação de artes"
+                  : "Do seu jeito"
         }
-        description={config.content.description}
+        description={
+          view === "artes"
+            ? "Organize, acompanhe e aprove cada arte em produção para os clientes."
+            : config.content.description
+        }
       >
-        {view !== "settings" && (
+        {view !== "settings" && view !== "artes" && (
           <Button onClick={() => setCreate(true)}>
             <Plus size={17} />
             Adicionar usuário
+          </Button>
+        )}
+        {view === "artes" && (
+          <Button onClick={() => setArtCreate(true)}>
+            <Plus size={17} />
+            Nova arte
           </Button>
         )}
       </PageHead>
@@ -119,6 +148,100 @@ export default function Admin({ config }: TemplateProps) {
             </Panel>
           ))}
         </div>
+      ) : view === "artes" ? (
+        <>
+          <div className="stat-grid">
+            <Stat
+              label="Artes em produção"
+              value={arts.filter((x) => x.status === "Em produção").length}
+              change="Aguardando finalização"
+              icon={<Palette size={18} />}
+            />
+            <Stat
+              label="Em aprovação"
+              value={arts.filter((x) => x.status === "Em aprovação").length}
+              change="Com o cliente"
+              icon={<Activity size={18} />}
+            />
+            <Stat
+              label="Aprovadas"
+              value={arts.filter((x) => x.status === "Aprovado").length}
+              change="Prontas para publicar"
+              icon={<UserCheck size={18} />}
+            />
+            <Stat
+              label="Total de artes"
+              value={arts.length}
+              change="No workspace"
+              icon={<Download size={18} />}
+            />
+          </div>
+          <Panel
+            title="Fila de criação"
+            subtitle="Acompanhe cada peça do briefing à aprovação"
+            action={
+              <IconButton
+                label="Exportar artes"
+                onClick={() =>
+                  exportCSV(
+                    "artes.csv",
+                    ["Título", "Cliente", "Status", "Criado em"],
+                    filteredArts.map((x) => [x.title, x.subtitle || "", x.status, x.date]),
+                  )
+                }
+              >
+                <Download size={17} />
+              </IconButton>
+            }
+          >
+            <div className="toolbar panel-body" style={{ paddingBottom: 0 }}>
+              <Tabs
+                items={["Todos", "Em produção", "Em aprovação", "Aprovado", "Ajustes"]}
+                value={artFilter}
+                onChange={setArtFilter}
+              />
+              <Search
+                value={artQuery}
+                onChange={setArtQuery}
+                placeholder="Buscar artes…"
+              />
+            </div>
+            {filteredArts.length ? (
+              <div className="three-grid panel-body">
+                {filteredArts.map((a) => (
+                  <div className="feature-card" key={a.id}>
+                    <div className="between">
+                      <Palette size={22} />
+                      <Status value={a.status} />
+                    </div>
+                    <h3>{a.title}</h3>
+                    <p>{a.subtitle}</p>
+                    <p className="field-hint">{a.description}</p>
+                    <div className="between" style={{ marginTop: 18 }}>
+                      <small className="muted">{a.date}</small>
+                      <IconButton
+                        label={`Editar ${a.title}`}
+                        onClick={() => setArtEdit(a)}
+                      >
+                        <Pencil size={15} />
+                      </IconButton>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            ) : (
+              <Empty
+                title="Nenhuma arte encontrada"
+                text="Crie a primeira arte para este cliente."
+              >
+                <Button onClick={() => setArtCreate(true)}>
+                  <Plus size={17} />
+                  Nova arte
+                </Button>
+              </Empty>
+            )}
+          </Panel>
+        </>
       ) : (
         <>
           {view === "overview" && (
@@ -321,6 +444,58 @@ export default function Admin({ config }: TemplateProps) {
           toast(
             edit ? "Usuário atualizado." : "Usuário adicionado à demonstração.",
           );
+        }}
+      />
+      <FormModal
+        open={artCreate || !!artEdit}
+        onClose={() => {
+          setArtCreate(false);
+          setArtEdit(null);
+        }}
+        title={artEdit ? "Editar arte" : "Nova arte"}
+        description="Preencha o briefing da arte para a equipe de criação."
+        fields={[
+          { name: "title", label: "Título da arte", value: artEdit?.title },
+          { name: "subtitle", label: "Cliente", value: artEdit?.subtitle },
+          {
+            name: "description",
+            label: "Briefing / descrição",
+            type: "textarea",
+            value: artEdit?.description,
+            required: false,
+          },
+          {
+            name: "image",
+            label: "URL da referência de imagem",
+            value: artEdit?.image,
+            required: false,
+          },
+          {
+            name: "status",
+            label: "Status",
+            type: "select",
+            options: ["Em produção", "Em aprovação", "Aprovado", "Ajustes"],
+            value: artEdit?.status || "Em produção",
+          },
+        ]}
+        onSubmit={(d) => {
+          setArts((prev) =>
+            artEdit
+              ? prev.map((a) => (a.id === artEdit.id ? { ...a, ...d } : a))
+              : [
+                  {
+                    id: makeId(),
+                    title: d.title,
+                    subtitle: d.subtitle,
+                    description: d.description,
+                    image: d.image,
+                    status: d.status,
+                    date: "Nesta sessão",
+                  },
+                  ...prev,
+                ],
+          );
+          toast(artEdit ? "Arte atualizada." : "Arte adicionada à fila de criação.");
         }}
       />
     </AppFrame>

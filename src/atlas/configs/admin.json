@@ -27,6 +27,40 @@
     "heroImage": ""
   },
   "collections": {
+    "artes": [
+      {
+        "id": "a1",
+        "title": "Post de lançamento — Coleção Verão",
+        "subtitle": "Loja Bela Vista",
+        "description": "Arte para feed, cores quentes, destaque no novo produto.",
+        "status": "Em produção",
+        "date": "22 set. 2026"
+      },
+      {
+        "id": "a2",
+        "title": "Banner promocional Black Friday",
+        "subtitle": "Studio Fit",
+        "description": "Banner para stories e feed, 3 variações de preço.",
+        "status": "Em aprovação",
+        "date": "21 set. 2026"
+      },
+      {
+        "id": "a3",
+        "title": "Carrossel institucional",
+        "subtitle": "Clínica Viva Bem",
+        "description": "5 slides apresentando a equipe e os serviços.",
+        "status": "Aprovado",
+        "date": "19 set. 2026"
+      },
+      {
+        "id": "a4",
+        "title": "Arte para cardápio digital",
+        "subtitle": "Restaurante Sabor Caseiro",
+        "description": "Ajustar paleta conforme identidade visual do cliente.",
+        "status": "Ajustes",
+        "date": "23 set. 2026"
+      }
+    ],
     "users": [
       {
         "id": "1",
