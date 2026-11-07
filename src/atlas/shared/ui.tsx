@@ -25,10 +25,16 @@ import {
   Mail,
   CheckCircle2,
   Command,
+  Heart,
+  MessageCircle,
+  Send,
+  Bookmark,
+  MoreHorizontal,
 } from "lucide-react";
 import { createPortal } from "react-dom";
 import type { TemplateConfig, NavItem, CSSVars, Entity } from "../types";
 import { asset, money } from "../types";
+import igPlaceholder from "@/assets/instagram-post-placeholder.webp";
 const ToastContext = createContext<(text: string) => void>(() => {});
 export const useToast = () => useContext(ToastContext);
 export function TemplateRoot({
@@ -973,6 +979,131 @@ export function SettingPanel({
         <Button type="submit">Salvar preferências</Button>
       </form>
     </Panel>
+  );
+}
+export function InstagramFeedFrame({
+  children,
+}: {
+  children: React.ReactNode;
+}) {
+  return (
+    <div className="ig-frame">
+      <div className="ig-frame-top">
+        <span className="ig-wordmark">Instagram</span>
+        <div className="inline">
+          <Heart size={20} />
+          <Send size={20} />
+        </div>
+      </div>
+      <div className="ig-feed-list">{children}</div>
+    </div>
+  );
+}
+export function InstagramFeedPreview({
+  config,
+  item,
+}: {
+  config: TemplateConfig;
+  item: Entity;
+}) {
+  const [liked, setLiked] = useState(false);
+  const clientName = item.subtitle || config.branding.name;
+  const handle =
+    "@" +
+    clientName
+      .toLowerCase()
+      .normalize("NFD")
+      .replace(/[\u0300-\u036f]/g, "")
+      .replace(/[^a-z0-9]+/g, "");
+  const likeBase = 128 + ((item.title.length * 11) % 420);
+  const likes = likeBase + (liked ? 1 : 0);
+  return (
+    <article className="ig-preview">
+      <header className="ig-header">
+        <Avatar name={clientName} size={34} />
+        <div className="ig-header-info">
+          <b>{handle}</b>
+          <small>Publicação patrocinada · {config.branding.name}</small>
+        </div>
+        <MoreHorizontal size={18} />
+      </header>
+      <div className="ig-media">
+        <img
+          src={item.image ? asset(item.image) : igPlaceholder}
+          alt={item.title}
+          loading="lazy"
+        />
+        <span className="ig-status-pill">
+          <Status value={item.status} />
+        </span>
+      </div>
+      <div className="ig-actions">
+        <div className="ig-actions-left">
+          <button
+            className={liked ? "liked" : ""}
+            aria-label={liked ? "Descurtir" : "Curtir"}
+            onClick={() => setLiked((v) => !v)}
+          >
+            <Heart size={23} fill={liked ? "currentColor" : "none"} />
+          </button>
+          <button aria-label="Comentar">
+            <MessageCircle size={23} />
+          </button>
+          <button aria-label="Compartilhar">
+            <Send size={23} />
+          </button>
+        </div>
+        <button aria-label="Salvar">
+          <Bookmark size={22} />
+        </button>
+      </div>
+      <div className="ig-likes">{likes.toLocaleString("pt-BR")} curtidas</div>
+      <p className="ig-caption">
+        <b>{handle}</b>
+        {item.description || item.title}
+      </p>
+      <button className="ig-view-comments">Ver os 2 comentários</button>
+      <div className="ig-comments">
+        <p>
+          <b>equipe.criativa</b> Ficou incrível, parabéns pelo resultado! 🙌
+        </p>
+        <p>
+          <b>{handle}</b> Aguardando sua aprovação por aqui mesmo ✅
+        </p>
+      </div>
+      <div className="ig-time">{item.date}</div>
+    </article>
+  );
+}
+export function InstagramFeedSkeleton() {
+  return (
+    <div className="ig-frame">
+      <div className="ig-frame-top">
+        <span className="ig-wordmark">Instagram</span>
+      </div>
+      <div className="ig-feed-list">
+        <div className="ig-preview">
+          <div className="ig-header">
+            <span className="ig-skeleton ig-skeleton-circle" />
+            <div className="ig-header-info">
+              <span className="ig-skeleton" style={{ width: "40%", height: 11 }} />
+              <span
+                className="ig-skeleton"
+                style={{ width: "65%", height: 9, marginTop: 6 }}
+              />
+            </div>
+          </div>
+          <div className="ig-skeleton ig-media" />
+          <div style={{ padding: "14px 15px" }}>
+            <span className="ig-skeleton" style={{ width: "55%", height: 10 }} />
+            <span
+              className="ig-skeleton"
+              style={{ width: "80%", height: 10, marginTop: 10 }}
+            />
+          </div>
+        </div>
+      </div>
+    </div>
   );
 }
 export const commonNav = (

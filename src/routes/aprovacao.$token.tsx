@@ -2,7 +2,18 @@ import { useState } from "react";
 import { createFileRoute } from "@tanstack/react-router";
 import { CheckCircle2, MessageSquare, Clock, ThumbsUp } from "lucide-react";
 import "@/atlas/shared/styles.css";
-import { TemplateRoot, Button, Badge, Status, Empty } from "@/atlas/shared/ui";
+import { useEffect } from "react";
+import {
+  TemplateRoot,
+  Button,
+  Badge,
+  Status,
+  Empty,
+  Tabs,
+  InstagramFeedFrame,
+  InstagramFeedPreview,
+  InstagramFeedSkeleton,
+} from "@/atlas/shared/ui";
 import rawConfig from "@/atlas/configs/admin.json";
 import type { TemplateConfig, Entity } from "@/atlas/types";
 import { list as listCollection } from "@/atlas/types";
@@ -28,6 +39,14 @@ function ApprovalPage() {
   const [feedbackFor, setFeedbackFor] = useState<Entity | null>(null);
   const [feedback, setFeedback] = useState("");
   const [sent, setSent] = useState(false);
+  const [viewMode, setViewMode] = useState<"lista" | "instagram">("lista");
+  const [loading, setLoading] = useState(true);
+  const tokenValid = Boolean(token && token.trim().length >= 6);
+
+  useEffect(() => {
+    const timer = setTimeout(() => setLoading(false), 450);
+    return () => clearTimeout(timer);
+  }, [token]);
 
   const approve = (id: string) => {
     setItems((prev) =>
@@ -63,7 +82,37 @@ function ApprovalPage() {
             </p>
           </div>
         </div>
+        {!tokenValid ? (
+          <Empty
+            title="Link de aprovação inválido"
+            text="Este link está incompleto ou expirou. Peça à sua agência um novo link de aprovação."
+          />
+        ) : loading ? (
+          <div className="ig-toggle-row" style={{ marginBottom: 0 }}>
+            <InstagramFeedSkeleton />
+          </div>
+        ) : (
+        <>
+        {items.length > 0 && (
+          <div className="ig-toggle-row">
+            <Tabs
+              items={[
+                { id: "lista", label: "Lista de revisão" },
+                { id: "instagram", label: "Prévia no Instagram" },
+              ]}
+              value={viewMode}
+              onChange={(v) => setViewMode(v as "lista" | "instagram")}
+            />
+          </div>
+        )}
         {items.length ? (
+          viewMode === "instagram" ? (
+            <InstagramFeedFrame>
+              {items.map((a) => (
+                <InstagramFeedPreview key={a.id} config={config} item={a} />
+              ))}
+            </InstagramFeedFrame>
+          ) : (
           <div className="three-grid">
             {items.map((a) => (
               <div className="feature-card" key={a.id}>
@@ -91,11 +140,14 @@ function ApprovalPage() {
               </div>
             ))}
           </div>
+          )
         ) : (
           <Empty
             title="Nenhuma arte neste link"
             text="Este link de aprovação ainda não tem peças vinculadas ou expirou."
           />
+        )}
+        </>
         )}
         {feedbackFor && (
           <div className="panel" style={{ marginTop: 28, padding: 24 }}>
