@@ -2258,6 +2258,53 @@ tbody tr:hover {
   color: var(--muted);
   margin-top: 4px;
 }
+.ig-view-comments {
+  border: 0;
+  background: none;
+  padding: 6px 15px 0;
+  color: var(--muted);
+  font-size: 12px;
+  text-align: left;
+}
+.ig-comments {
+  padding: 4px 15px 0;
+  font-size: 13px;
+  line-height: 1.7;
+}
+.ig-comments b {
+  font-weight: 700;
+  margin-right: 6px;
+}
+.ig-skeleton {
+  display: block;
+  background: linear-gradient(
+    90deg,
+    color-mix(in srgb, var(--line) 60%, var(--surface)) 25%,
+    color-mix(in srgb, var(--accent) 10%, var(--surface)) 37%,
+    color-mix(in srgb, var(--line) 60%, var(--surface)) 63%
+  );
+  background-size: 400% 100%;
+  animation: ig-shimmer 1.4s ease infinite;
+  border-radius: 6px;
+}
+.ig-skeleton-circle {
+  width: 34px;
+  height: 34px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+.ig-frame .ig-skeleton.ig-media {
+  aspect-ratio: 1 / 1;
+  border-radius: 0;
+}
+@keyframes ig-shimmer {
+  0% {
+    background-position: 100% 0;
+  }
+  100% {
+    background-position: 0 0;
+  }
+}
 .product-symbol {
   width: 37px;
   height: 37px;
