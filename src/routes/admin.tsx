@@ -1,4 +1,5 @@
-import { createFileRoute } from "@tanstack/react-router";
+import { createFileRoute, useNavigate } from "@tanstack/react-router";
+import { useEffect } from "react";
 import "@/atlas/shared/styles.css";
 import Admin from "@/atlas/templates/admin";
 import rawConfig from "@/atlas/configs/admin.json";
@@ -18,6 +19,14 @@ export const Route = createFileRoute("/admin")({
 });
 
 function AdminPage() {
+  const navigate = useNavigate();
+
+  useEffect(() => {
+    if (typeof window !== "undefined" && !window.localStorage.getItem("atlas_session")) {
+      navigate({ to: "/auth" });
+    }
+  }, [navigate]);
+
   return (
     <TemplateRoot config={config}>
       <Admin config={config} />
