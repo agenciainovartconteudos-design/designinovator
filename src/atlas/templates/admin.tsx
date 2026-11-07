@@ -13,6 +13,7 @@ import {
   Link2,
   AlertCircle,
   Plus,
+  MessageSquare,
 } from "lucide-react";
 import type { TemplateProps } from "../types";
 import {
@@ -30,6 +31,7 @@ import {
   LineChart,
   IconButton,
   Empty,
+  Modal,
   exportCSV,
   useToast,
 } from "../shared/ui";
@@ -37,6 +39,7 @@ import { supabase } from "@/integrations/supabase/client";
 import type { AppRole, Database } from "@/integrations/supabase/types";
 
 type PostRow = Database["public"]["Tables"]["posts"]["Row"];
+type CommentRow = Database["public"]["Tables"]["comments"]["Row"];
 type UserRow = {
   id: string;
   nome: string;
@@ -75,8 +78,23 @@ export default function Admin({ config }: TemplateProps) {
   const [artFilter, setArtFilter] = useState("Todos");
   const [artEdit, setArtEdit] = useState<PostRow | null>(null);
   const [artCreate, setArtCreate] = useState(false);
+  const [commentsFor, setCommentsFor] = useState<PostRow | null>(null);
+  const [comments, setComments] = useState<CommentRow[]>([]);
+  const [commentsLoading, setCommentsLoading] = useState(false);
 
   const toast = useToast();
+
+  const viewComments = async (post: PostRow) => {
+    setCommentsFor(post);
+    setCommentsLoading(true);
+    const { data } = await supabase
+      .from("comments")
+      .select("*")
+      .eq("post_id", post.id)
+      .order("created_at", { ascending: false });
+    setComments(data || []);
+    setCommentsLoading(false);
+  };
 
   const loadUsers = async () => {
     setUsersLoading(true);
@@ -306,6 +324,9 @@ export default function Admin({ config }: TemplateProps) {
                     <div className="between" style={{ marginTop: 18 }}>
                       <small className="muted">{dateLabel(a.created_at)}</small>
                       <div className="inline">
+                        <IconButton label="Ver comentários" onClick={() => viewComments(a)}>
+                          <MessageSquare size={15} />
+                        </IconButton>
                         <IconButton label="Copiar link de aprovação" onClick={() => copyApprovalLink(a.approval_token)}>
                           <Link2 size={15} />
                         </IconButton>
@@ -517,6 +538,30 @@ export default function Admin({ config }: TemplateProps) {
           loadUsers();
         }}
       />
+      <Modal
+        open={!!commentsFor}
+        onClose={() => setCommentsFor(null)}
+        title={`Comentários — ${commentsFor?.title || ""}`}
+      >
+        {commentsLoading ? (
+          <p className="muted">Carregando comentários…</p>
+        ) : comments.length ? (
+          <div className="row-list">
+            {comments.map((c) => (
+              <div className="list-row" key={c.id}>
+                <Avatar name={c.author} />
+                <div>
+                  <h3>{c.author}</h3>
+                  <p>{c.message}</p>
+                </div>
+                <small className="muted">{dateLabel(c.created_at)}</small>
+              </div>
+            ))}
+          </div>
+        ) : (
+          <Empty title="Sem comentários" text="O cliente ainda não deixou nenhum apontamento nesta arte." />
+        )}
+      </Modal>
       <FormModal
         open={artCreate || !!artEdit}
         onClose={() => {

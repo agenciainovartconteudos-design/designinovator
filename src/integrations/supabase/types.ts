@@ -93,6 +93,7 @@ export type Database = {
         };
       };
     };
+    Views: Record<string, never>;
     Functions: {
       has_role: {
         Args: { _user_id: string; _role: AppRole };
@@ -111,5 +112,9 @@ export type Database = {
         Returns: void;
       };
     };
+    Enums: {
+      app_role: AppRole;
+    };
+    CompositeTypes: Record<string, never>;
   };
 };

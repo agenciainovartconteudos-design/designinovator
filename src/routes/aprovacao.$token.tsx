@@ -1,8 +1,7 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { createFileRoute } from "@tanstack/react-router";
 import { CheckCircle2, MessageSquare, Clock, ThumbsUp } from "lucide-react";
 import "@/atlas/shared/styles.css";
-import { useEffect } from "react";
 import {
   TemplateRoot,
   Button,
@@ -16,9 +15,25 @@ import {
 } from "@/atlas/shared/ui";
 import rawConfig from "@/atlas/configs/admin.json";
 import type { TemplateConfig, Entity } from "@/atlas/types";
-import { list as listCollection } from "@/atlas/types";
+import { supabase } from "@/integrations/supabase/client";
+import type { Database } from "@/integrations/supabase/types";
+
+type PostRow = Database["public"]["Tables"]["posts"]["Row"];
 
 const config = rawConfig as unknown as TemplateConfig;
+
+const dateLabel = (iso: string) =>
+  new Date(iso).toLocaleDateString("pt-BR", { day: "2-digit", month: "short", year: "numeric" });
+
+const toEntity = (p: PostRow): Entity => ({
+  id: p.id,
+  title: p.title,
+  subtitle: p.client_name,
+  description: p.description || "",
+  status: p.status,
+  image: p.image_url || undefined,
+  date: dateLabel(p.created_at),
+});
 
 export const Route = createFileRoute("/aprovacao/$token")({
   head: () => ({
@@ -35,23 +50,35 @@ export const Route = createFileRoute("/aprovacao/$token")({
 
 function ApprovalPage() {
   const { token } = Route.useParams();
-  const [items, setItems] = useState<Entity[]>(listCollection(config, "artes"));
+  const [items, setItems] = useState<Entity[]>([]);
   const [feedbackFor, setFeedbackFor] = useState<Entity | null>(null);
   const [feedback, setFeedback] = useState("");
   const [sent, setSent] = useState(false);
   const [viewMode, setViewMode] = useState<"lista" | "instagram">("lista");
   const [loading, setLoading] = useState(true);
-  const tokenValid = Boolean(token && token.trim().length >= 6);
+  const [tokenValid, setTokenValid] = useState(true);
+
+  const load = async () => {
+    setLoading(true);
+    const { data, error } = await supabase.rpc("get_posts_by_token", { p_token: token });
+    if (error || !data || data.length === 0) {
+      setTokenValid(false);
+      setItems([]);
+    } else {
+      setTokenValid(true);
+      setItems((data as PostRow[]).map(toEntity));
+    }
+    setLoading(false);
+  };
 
   useEffect(() => {
-    const timer = setTimeout(() => setLoading(false), 450);
-    return () => clearTimeout(timer);
+    load();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [token]);
 
-  const approve = (id: string) => {
-    setItems((prev) =>
-      prev.map((a) => (a.id === id ? { ...a, status: "Aprovado" } : a)),
-    );
+  const approve = async (id: string) => {
+    setItems((prev) => prev.map((a) => (a.id === id ? { ...a, status: "Aprovado" } : a)));
+    await supabase.rpc("set_post_status_by_token", { p_token: token, p_status: "Aprovado" });
   };
 
   const requestChange = (item: Entity) => {
@@ -60,12 +87,12 @@ function ApprovalPage() {
     setSent(false);
   };
 
-  const submitFeedback = () => {
+  const submitFeedback = async () => {
     if (!feedbackFor) return;
+    await supabase.rpc("add_comment_by_token", { p_token: token, p_message: feedback, p_author: "Cliente" });
+    await supabase.rpc("set_post_status_by_token", { p_token: token, p_status: "Ajustes" });
     setItems((prev) =>
-      prev.map((a) =>
-        a.id === feedbackFor.id ? { ...a, status: "Ajustes" } : a,
-      ),
+      prev.map((a) => (a.id === feedbackFor.id ? { ...a, status: "Ajustes" } : a)),
     );
     setSent(true);
   };
@@ -82,15 +109,15 @@ function ApprovalPage() {
             </p>
           </div>
         </div>
-        {!tokenValid ? (
+        {loading ? (
+          <div className="ig-toggle-row" style={{ marginBottom: 0 }}>
+            <InstagramFeedSkeleton />
+          </div>
+        ) : !tokenValid ? (
           <Empty
             title="Link de aprovação inválido"
             text="Este link está incompleto ou expirou. Peça à sua agência um novo link de aprovação."
           />
-        ) : loading ? (
-          <div className="ig-toggle-row" style={{ marginBottom: 0 }}>
-            <InstagramFeedSkeleton />
-          </div>
         ) : (
         <>
         {items.length > 0 && (
