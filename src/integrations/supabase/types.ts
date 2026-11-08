@@ -1,5 +1,7 @@
 export type AppRole = "admin" | "editor" | "member";
 
+export type GenerationType = "instagram" | "video" | "email" | "ad";
+
 export type Json =
   | string
   | number
@@ -18,6 +20,7 @@ export type Database = {
           email: string | null;
           avatar_url: string | null;
           status: string;
+          credits: number;
           created_at: string;
           updated_at: string;
         };
@@ -27,12 +30,42 @@ export type Database = {
           email?: string | null;
           avatar_url?: string | null;
           status?: string;
+          credits?: number;
         };
         Update: {
           nome?: string;
           email?: string | null;
           avatar_url?: string | null;
           status?: string;
+          credits?: number;
+        };
+      };
+      content_generations: {
+        Row: {
+          id: string;
+          user_id: string;
+          type: string;
+          tone: string;
+          prompt: string;
+          result: string;
+          credits_used: number;
+          created_at: string;
+        };
+        Insert: {
+          id?: string;
+          user_id: string;
+          type: string;
+          tone: string;
+          prompt: string;
+          result: string;
+          credits_used?: number;
+        };
+        Update: {
+          type?: string;
+          tone?: string;
+          prompt?: string;
+          result?: string;
+          credits_used?: number;
         };
       };
       user_roles: {

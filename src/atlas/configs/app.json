@@ -1,0 +1,30 @@
+{
+  "schemaVersion": 1,
+  "templateId": "app",
+  "locale": "pt-BR",
+  "branding": {
+    "name": "Nexo Conteúdo",
+    "shortName": "NC",
+    "tagline": "GERE CONTEÚDO EM SEGUNDOS COM IA"
+  },
+  "theme": {
+    "mode": "light",
+    "accent": "#3676e6",
+    "accentText": "#ffffff",
+    "background": "#f4f6f8",
+    "surface": "#ffffff",
+    "text": "#18232d",
+    "muted": "#73808e",
+    "line": "#152a3b12",
+    "serif": false,
+    "radius": 14
+  },
+  "content": {
+    "headline": "Gerador de conteúdo com IA",
+    "description": "Crie legendas, roteiros e anúncios prontos para publicar, direto no seu workspace.",
+    "eyebrow": "GERADOR DE CONTEÚDO",
+    "cta": "Gerar conteúdo",
+    "heroImage": ""
+  },
+  "collections": {}
+}

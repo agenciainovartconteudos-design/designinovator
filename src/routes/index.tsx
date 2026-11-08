@@ -54,6 +54,7 @@ function Index() {
       <nav className="atlas-landing-nav">
         {session ? (
           <>
+            <Link to="/app">Gerador de conteúdo</Link>
             {isAdmin && <Link to="/admin">Painel</Link>}
             <button type="button" className="text-button" onClick={logout}>
               Sair
